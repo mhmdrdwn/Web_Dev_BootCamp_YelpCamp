@@ -13,7 +13,8 @@ app.use(express.static("images"));
 mongoose.connect("mongodb://localhost:27017/yelp_camp", {useNewUrlParser: true});
 var campgroundSchema= new mongoose.Schema({
 	name:String,
-	image:String
+	image:String,
+	description:String
 });
 
 var Campground=mongoose.model("Campground", campgroundSchema);
@@ -21,7 +22,9 @@ var Campground=mongoose.model("Campground", campgroundSchema);
 //Campground.create(
 //	{
 //		name:"Oeschinen Lake", 
-//		image: "Oeschinen Lake.jpeg"
+//		image: "Oeschinen Lake.jpeg",
+//		description:"New Campground to test"
+//
 //	}, function(err, newCampground){
 //		if(err){
 //			console.log("error");
@@ -56,23 +59,26 @@ app.get("/", function(req, res){
 	res.render("landing");
 });
 
+// INDEX Route, show all campogrounds
 app.get("/campgrounds", function(req, res){
 	//res.render("campgrounds", {campgrounds : campgrounds});
 	Campground.find({}, function(err, allCampgrounds){
 		if(err){
 			console.log(err);
 		}else{
-			res.render("campgrounds",{campgrounds:allCampgrounds});
+			res.render("index",{campgrounds:allCampgrounds});
 		}
 	});
 
 });
 
+// CREATE Route, Add new Campground
 app.post("/campgrounds", function(req, res){
 	//res.send("you hit the post route");
 	var name=req.body.name;
 	var image=req.body.image;
-	var newCampground={name:name, image:image}
+	var desc=req.body.description;
+	var newCampground={name:name, image:image, description: desc}
 	//the next line to the array
 	//campgrounds.push(newCampground);
 	Campground.create(newCampground, function(err, newlyCreated){
@@ -85,8 +91,23 @@ app.post("/campgrounds", function(req, res){
 	//res.redirect("/campgrounds");
 });
 
+// NEW Route, show new form to add new entry
 app.get("/campgrounds/new", function(req, res){
 	res.render("new.ejs");
+});
+
+// SHOW Route, show more info about campground with ID
+app.get("/campgrounds/:id", function(req, res){
+	//res.send("this will be the show page");
+	// capturing the id from the more info button and show it
+	Campground.findById(req.params.id, function(err, foundCampground){
+	if(err){
+		console.log(err);
+	}else{
+		res.render("show", {campground:foundCampground});
+	}
+	});
+	
 });
 
 //on ubuntu
