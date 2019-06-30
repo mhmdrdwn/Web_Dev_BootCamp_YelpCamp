@@ -10,20 +10,6 @@ app.use(bodyParser.urlencoded({extended:true}))
 mongoose.connect("mongodb://localhost:27017/yelpcamp")
 seedDB();
 
-//Campground.create({
-//	name : "Granite Hill", 
-//	image : "https://farm1.staticflickr.com/60/215827008_6489cd30c3.jpg",
-//	description : "THis is nothing included in the camgrprond, just emply campground"
-//}, function(err, campground){
-//	if(err){
-//		console.log("we have error")
-//	}else{
-//		console.log("Newly created camp")
-//		console.log(campground)	
-//	}
-//	
-//})
-
 var campgrounds=[
 	{name: "Salmon Creek", image: "https://farm9.staticflickr.com/8442/7962474612_bf2baf67c0.jpg"},
 	{name: "Granite Hill", image: "https://farm1.staticflickr.com/60/215827008_6489cd30c3.jpg"},
@@ -45,14 +31,14 @@ app.get("/campgrounds", function(req,res){
 		if(err){
 			console.log(err)	
 		}else{
-			res.render("index", { campgrounds : campgrounds})
+			res.render("campgrounds/index", { campgrounds : campgrounds})
 		}
 	})
 })
 
 // NEW Route - show form to create new item
 app.get("/campgrounds/new", function(req,res){
-	res.render("new")	
+	res.render("campgrounds/new")	
 })
 
 // CREATE Route - adding new item to database
@@ -79,11 +65,44 @@ app.get("/campgrounds/:id",function(req,res){
 		if(err){
 			console.log(err)
 		}else{
-			res.render("show",{campground: foundCampground})
+			res.render("campgrounds/show",{campground: foundCampground})
 		}
 	})
 })
 
+// Comments routes
+// NEW Route
+app.get("/campgrounds/:id/comments/new", function(req, res){
+	Campground.findById(req.params.id, function(err, campground){
+		if(err){
+			console.log(err)
+		}else{
+			res.render("comments/new", {campground : campground})
+		}
+	})
+
+})
+
+//
+app.post("/campgrounds/:id/comments", function(req, res){
+	Campground.findById(req.params.id, function(err, campground){
+		if(err){
+			console.log(err)
+			res.redirect("/campgrounds")	
+		}else{
+			Comment.create(req.body.comment, function(err, comment){
+				if(err){
+					console.log(err)
+				}else{
+					campground.comments.push(comment)
+					campground.save()
+					res.redirect("/campgrounds/"+campground._id)
+
+				}
+			})	
+		}	
+	})
+})
 
 app.listen(3000, function(){
 	console.log("server is up")
