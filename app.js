@@ -5,6 +5,7 @@ var mongoose = require("mongoose")
 var Campground = require("./models/campground")
 var Comment = require("./models/comment")
 var seedDB = require("./seeds")
+var flash = require("connect-flash")
 var passport = require("passport")
 var LocalStrategy = require("passport-local")
 var methodOverride = require("method-override")
@@ -21,10 +22,13 @@ app.use(require("express-session")({
 	resave : false,
 	saveUninitialized : false
 }))
+app.use(flash())
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(function(req, res, next){
 	res.locals.currentUser = req.user
+	res.locals.error = req.flash("error")
+	res.locals.success = req.flash("success")
 	next()
 })
 app.use(methodOverride("_method"))
